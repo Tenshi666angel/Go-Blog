@@ -2,6 +2,7 @@ package register
 
 import (
 	"blog/internal/constants/servererror"
+	"blog/internal/lib/api/errorhandling"
 	resp "blog/internal/lib/api/response"
 	"blog/internal/lib/logger/sl"
 	"blog/internal/persistence"
@@ -38,7 +39,10 @@ func New(logger *slog.Logger, userRepo persistence.UserRepo) http.HandlerFunc {
 
 		authService := services.NewAuth(logger, userRepo)
 
-		user := authService.Register(req)
+		user, err := authService.Register(req)
+		if errorhandling.HandleErrors(w, r, err) {
+			return
+		}
 
 		render.JSON(w, r, Response{
 			Response: resp.Ok(),

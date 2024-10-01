@@ -1,7 +1,7 @@
 package refresh
 
 import (
-	"blog/internal/constants/servererror"
+	"blog/internal/lib/api/errorhandling"
 	"blog/internal/lib/logger/sl"
 	"blog/internal/persistence"
 	"blog/internal/services"
@@ -30,12 +30,15 @@ func New(logger *slog.Logger, userRepo persistence.UserRepo) http.HandlerFunc {
 		cookie, err := r.Cookie("tasty_cookies")
 		if err != nil {
 			logger.Error("cookie not found", sl.Err(err))
-			panic(servererror.ResourceNotFound)
+			return
 		}
 
 		authService := services.NewAuth(logger, userRepo)
 
-		tokenPair := authService.Refresh(cookie.Value)
+		tokenPair, err := authService.Refresh(cookie.Value)
+		if errorhandling.HandleErrors(w, r, err) {
+			return
+		}
 
 		token.SetToCookie(tokenPair.RefreshToken, w)
 

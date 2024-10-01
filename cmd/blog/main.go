@@ -28,8 +28,6 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Use(middleware.ErrorHandler)
-
 	r.Group(func(pr chi.Router) {
 		pr.Use(middleware.JwtMiddleware)
 		pr.Get("/protected", func(w http.ResponseWriter, r *http.Request) {

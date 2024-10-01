@@ -2,6 +2,7 @@ package auth
 
 import (
 	"blog/internal/constants/servererror"
+	"blog/internal/lib/api/errorhandling"
 	"blog/internal/lib/logger/sl"
 	"blog/internal/persistence"
 	"blog/internal/services"
@@ -37,7 +38,10 @@ func New(logger *slog.Logger, userRepo persistence.UserRepo) http.HandlerFunc {
 
 		authService := services.NewAuth(logger, userRepo)
 
-		tokenPair := authService.LogIn(req)
+		tokenPair, err := authService.LogIn(req)
+		if errorhandling.HandleErrors(w, r, err) {
+			return
+		}
 
 		token.SetToCookie(tokenPair.RefreshToken, w)
 
