@@ -5,6 +5,7 @@ import (
 	"blog/internal/http-server/auth"
 	"blog/internal/http-server/getbyusername"
 	"blog/internal/http-server/middleware"
+	"blog/internal/http-server/refresh"
 	"blog/internal/http-server/register"
 	"blog/internal/lib/logger/sl"
 	"blog/internal/logger"
@@ -41,6 +42,7 @@ func main() {
 	})
 
 	r.Post("/register", register.New(logger, storage))
+	r.Post("/refresh", refresh.New(logger, storage))
 	r.Post("/login", auth.New(logger, storage))
 	r.Get("/getuser", getbyusername.New(logger, storage))
 

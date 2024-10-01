@@ -7,6 +7,7 @@ import (
 	"blog/internal/token"
 	"blog/internal/types"
 	"log/slog"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -46,7 +47,7 @@ func (s *AuthService) Register(user types.User) *types.User {
 	}
 }
 
-func (s *AuthService) LogIn(user types.User) string {
+func (s *AuthService) LogIn(user types.User) *types.TokenPair {
 	dbUser, err := s.Repo.GetByUsername(user.Username)
 	if err != nil {
 		s.Logger.Error("user not found", sl.Err(err))
@@ -59,11 +60,45 @@ func (s *AuthService) LogIn(user types.User) string {
 		panic(servererror.InvalidCrerdentials)
 	}
 
-	token, err := token.GenerateToken(dbUser.Username)
+	accessToken, err := token.GenerateToken(dbUser.Username, 5*time.Minute)
 	if err != nil {
 		s.Logger.Error("failed to generate token", sl.Err(err))
 		panic(servererror.InternalError)
 	}
 
-	return token
+	refreshToken, err := token.GenerateToken(dbUser.Username, 30*24*time.Hour)
+	if err != nil {
+		s.Logger.Error("failed to generate reftesh token", sl.Err(err))
+		panic(servererror.InternalError)
+	}
+
+	return &types.TokenPair{
+		AccesToken:   accessToken,
+		RefreshToken: refreshToken,
+	}
+}
+
+func (s *AuthService) Refresh(refreshToken string) *types.TokenPair {
+	username, err := token.ParseToken(refreshToken)
+	if err != nil {
+		s.Logger.Error("failed to parse token", sl.Err(err))
+		panic(servererror.InvalidCrerdentials)
+	}
+
+	access_token, err := token.GenerateToken(username, 5*time.Minute)
+	if err != nil {
+		s.Logger.Error("failed to generate token", sl.Err(err))
+		panic(servererror.InternalError)
+	}
+
+	newRefreshToken, err := token.GenerateToken(username, 30*24*time.Hour)
+	if err != nil {
+		s.Logger.Error("failed to generate reftesh token", sl.Err(err))
+		panic(servererror.InternalError)
+	}
+
+	return &types.TokenPair{
+		AccesToken:   access_token,
+		RefreshToken: newRefreshToken,
+	}
 }

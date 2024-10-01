@@ -3,6 +3,7 @@ package token
 import (
 	"blog/internal/types"
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -10,10 +11,10 @@ import (
 
 const signingKey = "osue3q97tgtg72gq3tgfvv"
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(username string, duration time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &types.TokenClaims{
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(12 * time.Hour).Unix(),
+			ExpiresAt: time.Now().Add(duration).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		Username: username,
@@ -39,4 +40,16 @@ func ParseToken(accessToken string) (string, error) {
 	}
 
 	return claims.Username, nil
+}
+
+func SetToCookie(token string, w http.ResponseWriter) {
+	cookie := http.Cookie{
+		Name:     "tasty_cookies",
+		Value:    token,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   30 * 24 * 60 * 60,
+	}
+
+	http.SetCookie(w, &cookie)
 }
