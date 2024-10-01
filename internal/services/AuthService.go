@@ -8,7 +8,6 @@ import (
 	"blog/internal/types"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,6 +26,7 @@ func NewAuth(logger *slog.Logger, repo persistence.UserRepo) *AuthService {
 
 func (s *AuthService) Register(user types.User) (*types.User, error) {
 	const op = "services.AuthService.Register"
+
 	passHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		s.Logger.Error("failed to hash password", sl.Err(err))
@@ -51,6 +51,7 @@ func (s *AuthService) Register(user types.User) (*types.User, error) {
 
 func (s *AuthService) LogIn(user types.User) (*types.TokenPair, error) {
 	const op = "services.AuthService.LogIn"
+
 	dbUser, err := s.Repo.GetByUsername(user.Username)
 	if err != nil {
 		s.Logger.Error("user not found", sl.Err(err))
@@ -63,46 +64,27 @@ func (s *AuthService) LogIn(user types.User) (*types.TokenPair, error) {
 		return nil, fmt.Errorf("%s: %w", op, servererror.InvalidCrerdentials)
 	}
 
-	accessToken, err := token.GenerateToken(dbUser.Username, 5*time.Minute)
+	tokenPair, err := token.GeneratePair(dbUser.Username)
 	if err != nil {
-		s.Logger.Error("failed to generate token", sl.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
 	}
 
-	refreshToken, err := token.GenerateToken(dbUser.Username, 30*24*time.Hour)
-	if err != nil {
-		s.Logger.Error("failed to generate reftesh token", sl.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
-	}
-
-	return &types.TokenPair{
-		AccesToken:   accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return tokenPair, nil
 }
 
 func (s *AuthService) Refresh(refreshToken string) (*types.TokenPair, error) {
 	const op = "services.AuthService.Refresh"
+
 	username, err := token.ParseToken(refreshToken)
 	if err != nil {
 		s.Logger.Error("failed to parse token", sl.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, servererror.InvalidCrerdentials)
 	}
 
-	access_token, err := token.GenerateToken(username, 5*time.Minute)
+	tokenPair, err := token.GeneratePair(username)
 	if err != nil {
-		s.Logger.Error("failed to generate token", sl.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
 	}
 
-	newRefreshToken, err := token.GenerateToken(username, 30*24*time.Hour)
-	if err != nil {
-		s.Logger.Error("failed to generate reftesh token", sl.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
-	}
-
-	return &types.TokenPair{
-		AccesToken:   access_token,
-		RefreshToken: newRefreshToken,
-	}, nil
+	return tokenPair, nil
 }

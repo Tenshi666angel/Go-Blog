@@ -53,3 +53,20 @@ func SetToCookie(token string, w http.ResponseWriter) {
 
 	http.SetCookie(w, &cookie)
 }
+
+func GeneratePair(username string) (*types.TokenPair, error) {
+	accessToken, err := GenerateToken(username, 5*time.Minute)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := GenerateToken(username, 30*24*time.Hour)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.TokenPair{
+		AccesToken:   accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
