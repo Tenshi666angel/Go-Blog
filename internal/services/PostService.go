@@ -69,7 +69,7 @@ func (s *PostService) GetAll() (*[]types.PostResponse, error) {
 	postsEntities, err := s.PostRepo.GetAll()
 	if err != nil {
 		s.Logger.Error("failed to get posts", sl.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
 	}
 
 	var posts []types.PostResponse
@@ -78,7 +78,7 @@ func (s *PostService) GetAll() (*[]types.PostResponse, error) {
 		entity, err := s.UserRepo.GetEntityById(pe.User_id)
 		if err != nil {
 			s.Logger.Error("failed to get user", sl.Err(err))
-			return nil, fmt.Errorf("%s: %w", op, err)
+			return nil, fmt.Errorf("%s: %w", op, servererror.InternalError)
 		}
 
 		post := types.PostResponse{

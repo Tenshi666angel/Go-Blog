@@ -85,7 +85,7 @@ func (s *Storage) GetEntityByUsername(username string) (*types.UserEntity, error
 	var user types.UserEntity
 
 	if err := stmt.QueryRow(username).Scan(&user.Id, &user.Username, &user.Password); errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("user %s not found", username)
+		return nil, fmt.Errorf("user %s not found: %w", username, err)
 	}
 
 	defer stmt.Close()
