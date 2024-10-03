@@ -5,6 +5,7 @@ import (
 	"blog/internal/http-server/auth"
 	"blog/internal/http-server/getbyusername"
 	"blog/internal/http-server/middleware"
+	"blog/internal/http-server/posts"
 	"blog/internal/http-server/refresh"
 	"blog/internal/http-server/register"
 	"blog/internal/lib/logger/sl"
@@ -33,6 +34,8 @@ func main() {
 		pr.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("protected route"))
 		})
+		pr.Post("/posts/create", posts.Create(logger, storage, storage))
+		pr.Get("/posts/getall", posts.GetAll(logger, storage, storage))
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
