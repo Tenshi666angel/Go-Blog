@@ -12,5 +12,8 @@ type UserRepo interface {
 type PostsRepo interface {
 	SavePost(post types.PostEntity) (int64, error)
 	GetAll() (*[]types.PostEntity, error)
-	UpdateLikes(user_id int64, like int) (bool, error)
+	UpdateLikes(appId string, like int, username string) (bool, error)
+	GetLike(appId string, username string) (*types.Like, error)
+	CreateLike(appId string, username string) (int64, error)
+	DeleteLike(appId string, username string) error
 }

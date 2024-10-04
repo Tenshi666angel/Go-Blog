@@ -1,0 +1,2 @@
+ALTER TABLE posts 
+    ADD COLUMN app_id TEXT NOT NULL;

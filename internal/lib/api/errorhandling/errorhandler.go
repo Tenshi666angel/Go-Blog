@@ -19,6 +19,9 @@ func HandleErrors(w http.ResponseWriter, r *http.Request, e error) bool {
 		render.JSON(w, r, resp.Error("internal server error", http.StatusInternalServerError))
 	case errors.Is(e, servererror.InvalidCrerdentials):
 		render.JSON(w, r, resp.Error("invalid password or username", http.StatusUnauthorized))
+	case errors.Is(e, servererror.BadRequest):
+		render.JSON(w, r, resp.Error("bad request", http.StatusBadRequest))
 	}
+
 	return e != nil
 }

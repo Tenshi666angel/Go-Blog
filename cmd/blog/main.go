@@ -36,6 +36,8 @@ func main() {
 		})
 		pr.Post("/posts/create", posts.Create(logger, storage, storage))
 		pr.Get("/posts/getall", posts.GetAll(logger, storage, storage))
+		pr.Post("/posts/like", posts.Like(logger, storage, storage))
+		pr.Post("/posts/unlike", posts.UnLike(logger, storage, storage))
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
