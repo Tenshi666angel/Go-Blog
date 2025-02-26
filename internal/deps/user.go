@@ -1,4 +1,4 @@
-package config
+package deps
 
 import (
 	"blog/internal/user"
@@ -6,18 +6,18 @@ import (
 	"log/slog"
 )
 
-type UserConfig struct {
+type UserDeps struct {
 	Handler *user.UserHandler
 	Repo    user.UserRepo
 	Service user.UserService 
 }
 
-func NewUserConfig(db *sql.DB, logger *slog.Logger) *UserConfig {
+func NewUserDeps(db *sql.DB, logger *slog.Logger) *UserDeps {
 	repo := user.NewRepo(db, logger)
 	service := user.NewService(logger, repo)
 	handler := user.NewHandler(logger, service)	
 
-	return &UserConfig{
+	return &UserDeps{
 		Handler: handler,
 		Repo:    repo,
 		Service: service,

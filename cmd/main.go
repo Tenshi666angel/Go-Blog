@@ -1,7 +1,7 @@
 package main
 
 import (
-	"blog/internal/config"
+	"blog/internal/deps"
 	"blog/internal/middleware"
 	"log/slog"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	app := config.NewAppConfig()
+	app := deps.NewAppDeps()
 
 	r := chi.NewRouter()
 

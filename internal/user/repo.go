@@ -31,6 +31,8 @@ func (r *userRepo) Create(dto UserDto) error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
+	defer stmt.Close()
+
 	if _, err := stmt.Exec(dto.Username, dto.Password); err != nil {
 		if mysqlErr, ok := err.(*mysql.MySQLError); ok &&
 				mysqlErr.Number == db.UniqueConstraintCode {
@@ -53,6 +55,8 @@ func (r *userRepo) GetByUsername(username string) (*UserDto, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	defer stmt.Close()
+
 	var user UserDto
 
 	if err := stmt.QueryRow(username).Scan(&user.Username, &user.Password); err != nil {
@@ -61,4 +65,23 @@ func (r *userRepo) GetByUsername(username string) (*UserDto, error) {
 	}
 
 	return &user, nil
+}
+
+func (r *userRepo) CreateAvatar(username, url string) error {
+	const op = "user.repo.CreateAvatar"
+
+	stmt, err := r.db.Prepare("UPDATE users SET avatar = ? WHERE username = ?")
+	if err != nil {
+		r.logger.Error("error with sql statement", sl.Err(err))
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(url, username); err != nil {
+		r.logger.Error("failed create avatar", sl.Err(err))
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

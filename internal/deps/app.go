@@ -1,4 +1,4 @@
-package config
+package deps
 
 import (
 	"blog/config"
@@ -8,21 +8,21 @@ import (
 	"log/slog"
 )
 
-type AppConfig struct {
+type AppDeps struct {
 	DB	   *sql.DB
 	Logger *slog.Logger
 	Config *config.Config
-	User   *UserConfig
+	User   *UserDeps
 }
 
-func NewAppConfig() *AppConfig {
+func NewAppDeps() *AppDeps {
 	cfg := config.Cfg
 	db_ := db.Connect(cfg.StoragePath)
 	logger := logger.SetupLogger(cfg.Env)
 
-	userConfig := NewUserConfig(db_, logger)
+	userConfig := NewUserDeps(db_, logger)
 
-	return &AppConfig{
+	return &AppDeps{
 		DB:		db_,
 		Logger: logger,
 		Config: cfg,

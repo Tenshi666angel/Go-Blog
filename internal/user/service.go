@@ -4,6 +4,7 @@ import (
 	"blog/pkg/logger/sl"
 	"fmt"
 	"log/slog"
+	"mime/multipart"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -50,4 +51,11 @@ func (s *userService) Login(dto UserDto) error {
 	}
 
 	return nil
+}
+
+func (s *userService) CreateAvatar(
+        accessToken string,
+        file multipart.File,
+        handler *multipart.FileHeader) (string, error) {
+	
 }
