@@ -13,6 +13,7 @@ type Config struct {
 	StoragePath string `yaml:"storage_path"`
 	Address		string `yaml:"address"`
 	JwtKey      string `yaml:"jwt_key"`
+	DbxToken    string `yaml:"dbx_token"`
 }
 
 func MustLoad() *Config {

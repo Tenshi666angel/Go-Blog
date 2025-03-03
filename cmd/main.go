@@ -23,6 +23,7 @@ func main() {
 		pr.Get("/protected", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("protected route"))
 		})
+		pr.Post("/avatar", app.User.Handler.UploadAvatar)
 	})
 
 	srv := http.Server{

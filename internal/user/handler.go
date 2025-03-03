@@ -1,6 +1,7 @@
 package user
 
 import (
+	"blog/internal/types"
 	"blog/pkg/db"
 	"blog/pkg/logger/sl"
 	"blog/pkg/token"
@@ -150,4 +151,43 @@ func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
         Status: http.StatusOK,
         Msg:    "refresh successfully",
     })
+}
+
+func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	const op = "user.handler.UploadAvatar"
+
+	r.ParseMultipartForm(10 << 20)
+
+	accessTokenCookie, err := r.Cookie("tasty_cookies")
+	if err != nil {
+		h.logger.Error("error get cookies", sl.Err(err))
+		http.Error(w, "empty token", http.StatusForbidden)
+		return
+	}
+
+	username, err := token.Validate(accessTokenCookie.Value)
+	if err != nil {
+		h.logger.Error("bad token", sl.Err(err))
+		http.Error(w, "bad token", http.StatusForbidden)
+		return
+	}
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		h.logger.Error("error with file")
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	link, err := h.service.CreateAvatar(username, types.FileArgs{
+		File:    file,
+		Handler: *handler,
+	})
+	if err != nil {
+		h.logger.Error("error upload file")
+		http.Error(w, "500 internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, link)
 }

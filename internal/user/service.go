@@ -1,23 +1,27 @@
 package user
 
 import (
+	"blog/internal/dbxutils"
+	"blog/internal/types"
 	"blog/pkg/logger/sl"
 	"fmt"
 	"log/slog"
-	"mime/multipart"
+	"sync"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userService struct {
-	logger *slog.Logger
-	repo   UserRepo
+	logger       *slog.Logger
+	repo		 UserRepo
+	dbxCommitter dbxutils.DbxCommiter
 }
 
-func NewService(logger *slog.Logger, repo UserRepo) *userService {
+func NewService(logger *slog.Logger, repo UserRepo, dbxCommitter dbxutils.DbxCommiter) *userService {
 	return &userService{
-		logger: logger,
-		repo:   repo,
+		logger:		  logger,
+		repo:		  repo,
+		dbxCommitter: dbxCommitter,
 	}
 }
 
@@ -53,9 +57,31 @@ func (s *userService) Login(dto UserDto) error {
 	return nil
 }
 
-func (s *userService) CreateAvatar(
-        accessToken string,
-        file multipart.File,
-        handler *multipart.FileHeader) (string, error) {
+func (s *userService) CreateAvatar(username string, file types.FileArgs) (string, error) {
+	const op = "user.service.CreateAvatar"
+
+	linkChan := make(chan types.StrErr, 1)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 	
+	go func() {
+		defer wg.Done()
+		link, err := s.dbxCommitter.Upload(file)
+		linkChan <- types.StrErr{Str: link, Err: err}
+	}()
+	wg.Wait()
+
+	linkRes := <- linkChan
+	if linkRes.Err != nil {
+		s.logger.Error("error upload avatar", sl.Err(linkRes.Err))
+		return "", fmt.Errorf("%s: %w", op, linkRes.Err)
+	}
+
+	if err := s.repo.CreateAvatar(username, linkRes.Str); err != nil {
+		s.logger.Error("error create avatar", sl.Err(err))
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return linkRes.Str, nil	
 }

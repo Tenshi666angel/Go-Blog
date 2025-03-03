@@ -1,6 +1,8 @@
 package user
 
-import "mime/multipart"
+import (
+	"blog/internal/types"
+)
 
 type UserRepo interface {
 	Create(dto UserDto) error
@@ -11,8 +13,5 @@ type UserRepo interface {
 type UserService interface {
 	Register(dto UserDto) error
 	Login(dto UserDto) error
-	CreateAvatar(
-		accessToken string, 
-		file multipart.File, 
-		handler *multipart.FileHeader) (string, error)
+	CreateAvatar(username string, fileArgs types.FileArgs) (string, error)
 }
