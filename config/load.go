@@ -14,6 +14,8 @@ type Config struct {
 	Address		string `yaml:"address"`
 	JwtKey      string `yaml:"jwt_key"`
 	DbxToken    string `yaml:"dbx_token"`
+	DbxKey      string `yaml:"dbx_key"`
+	DbxSecret   string `yaml:"dbx_secret"`
 }
 
 func MustLoad() *Config {

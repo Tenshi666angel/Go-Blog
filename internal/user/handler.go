@@ -158,19 +158,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(10 << 20)
 
-	accessTokenCookie, err := r.Cookie("tasty_cookies")
-	if err != nil {
-		h.logger.Error("error get cookies", sl.Err(err))
-		http.Error(w, "empty token", http.StatusForbidden)
-		return
-	}
-
-	username, err := token.Validate(accessTokenCookie.Value)
-	if err != nil {
-		h.logger.Error("bad token", sl.Err(err))
-		http.Error(w, "bad token", http.StatusForbidden)
-		return
-	}
+	username := r.Context().Value("username").(string)
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {

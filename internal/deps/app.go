@@ -21,7 +21,11 @@ func NewAppDeps() *AppDeps {
 	cfg := config.Cfg
 	db_ := db.Connect(cfg.StoragePath)
 	logger := logger.SetupLogger(cfg.Env)
-	dbxCommitter := dbxutils.NewDbxCommiter(*dbx.InitDbx(cfg.DbxToken))
+	dbxToken, err := dbx.Refresh(cfg.DbxToken, cfg.DbxKey, cfg.DbxSecret)
+	if err != nil {
+		panic(err.Error())
+	}
+	dbxCommitter := dbxutils.NewDbxCommiter(*dbx.InitDbx(dbxToken))
 	userConfig := NewUserDeps(db_, logger, *dbxCommitter)
 
 	return &AppDeps{

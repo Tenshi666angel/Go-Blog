@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"blog/pkg/token"
+	"context"
 	"net/http"
 )
 
@@ -13,11 +14,14 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if _, err := token.Validate(accessToken.Value); err != nil {
+		username, err := token.Validate(accessToken.Value)
+		if err != nil {
 			http.Error(w, "bad token", http.StatusForbidden)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "username", username)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
